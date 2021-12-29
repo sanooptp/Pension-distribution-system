@@ -56,9 +56,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
         })
 
-=======
-
 
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
->>>>>>> origin/main
+
