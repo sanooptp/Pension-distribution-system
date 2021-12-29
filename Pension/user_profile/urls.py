@@ -5,5 +5,11 @@ from . import views
 urlpatterns = [
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    
+
+from .views import RegisterView
+
+
+urlpatterns =[
+    path('register/', RegisterView.as_view(), name='register'),
+
 ]
