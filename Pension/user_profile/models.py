@@ -8,7 +8,9 @@ class ExtendedUserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,10}$',
                                  message="Phone number must be entered in the format +919999999999. Up to 10 digits allowed.")
-    phone = models.CharField('Phone', validators=[phone_regex], max_length=10, unique=True, null=True)
+    phone = models.CharField('Phone', validators=[phone_regex], max_length=10,  null=True ,blank=True)
+    is_phone_verified = models.BooleanField(default=False)
+    otp = models.IntegerField(null=True,blank=True)
 
 
     def __str__(self):
