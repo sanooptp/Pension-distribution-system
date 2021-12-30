@@ -88,4 +88,4 @@ class ResetPassword(APIView):
             data = serializer.errors
         return Response(data, status=status.HTTP_200_OK)
             # return Response({'response': 'valid token'}, status=status.HTTP_200_OK)
-        
+            
