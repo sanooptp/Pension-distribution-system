@@ -91,7 +91,7 @@ DATABASES = {
     }
 }
 
-
+API_KEY ='4b022195-6927-11ec-b710-0200cd936042'
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

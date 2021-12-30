@@ -6,4 +6,6 @@ from .models import ExtendedUserProfile
 
 @admin.register(ExtendedUserProfile)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user','phone']
+    list_display = ['id', 'user','phone','otp']
+
+

@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
 from . import views
+from .views import RegisterView,OtpVerificationView
 
 urlpatterns = [
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -8,4 +9,9 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
     path('request-passwordreset/', views.RequestPasswordResetEmail.as_view(), name='request-passwordreset'),
     path('password-token-verify/<uidb64>/<token>/', views.ResetPassword.as_view(), name='password-token-verify'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('verify-otp/',OtpVerificationView.as_view(),name ="verify-otp")
+
 ]
+
+

@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from . import serializers
+from rest_framework import status
+from .serializers import RegistrationSerializer,OtpVerificationSerializer
 from rest_framework import status, generics
 from rest_framework.response import Response
 from .serializers import ForgotPasswordSerializer, RegistrationSerializer, SetNewPasswordSerializer
@@ -16,21 +18,43 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
 
-
 class RegisterView(GenericAPIView):
     serializer_class = RegistrationSerializer
+    def post(self,request):
+        serializer =RegistrationSerializer(data=request.data)
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         data = {}
         if serializer.is_valid():
             user = serializer.save()
-            data['response'] = "successfully registered a new user"
-
+            data['response'] = "An otp has sent to the phone number  and verify  your account "
         else:
             data = serializer.errors
         return Response(data)
 
+
+
+class OtpVerificationView(GenericAPIView):
+    serializer_class = OtpVerificationSerializer
+    def post(self,request):
+
+        serializer = OtpVerificationSerializer(data=request.data)
+        data ={}
+        if serializer.is_valid():
+            user = serializer.save()
+            data['response'] = "phone verified ,please login"
+        else:
+            data = serializer.errors
+        return Response(data)
+
+
+class ForgotPasswordView(APIView):
+    serializer_class = serializers.ForgotPasswordSerializer
+
+    def get(self, request):
+        serializer = self.serializer_class(data=request.data)
+        email= serializer.validated_data['email']
 
 class RequestPasswordResetEmail(generics.GenericAPIView):
     serializer_class = ForgotPasswordSerializer
