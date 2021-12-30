@@ -3,9 +3,11 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from user_profile.helpers import send_otp_to_phone
+from user_profile.models import ExtendedUserProfile
 from . import serializers
 from rest_framework import status
-from .serializers import RegistrationSerializer,OtpVerificationSerializer
+from .serializers import RegistrationSerializer,OtpVerificationSerializer, ResendOtpSerializer
 from rest_framework import status, generics
 from rest_framework.response import Response
 from .serializers import ForgotPasswordSerializer, RegistrationSerializer, SetNewPasswordSerializer
@@ -17,6 +19,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.core.mail import send_mail
 from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+import requests
+from django.conf import settings
+
 
 class RegisterView(GenericAPIView):
     serializer_class = RegistrationSerializer
@@ -32,7 +37,6 @@ class RegisterView(GenericAPIView):
         else:
             data = serializer.errors
         return Response(data)
-
 
 
 class OtpVerificationView(GenericAPIView):
@@ -55,6 +59,7 @@ class ForgotPasswordView(APIView):
     def get(self, request):
         serializer = self.serializer_class(data=request.data)
         email= serializer.validated_data['email']
+
 
 class RequestPasswordResetEmail(generics.GenericAPIView):
     serializer_class = ForgotPasswordSerializer
@@ -89,7 +94,6 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
         return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
 
 
-
 class ResetPassword(APIView):
     serializer_class = SetNewPasswordSerializer
 
@@ -112,4 +116,32 @@ class ResetPassword(APIView):
             data = serializer.errors
         return Response(data, status=status.HTTP_200_OK)
             # return Response({'response': 'valid token'}, status=status.HTTP_200_OK)
-            
+
+
+class ResendOtp(APIView):
+    serializer_class = serializers.ResendOtpSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            phone= serializer.data.get('phone')
+            print(phone)
+            profile= ExtendedUserProfile.objects.get(phone=phone)
+            otp = profile.otp
+            email= profile.user.email
+            url = f'https://2factor.in/API/V1/{settings.API_KEY}/SMS/{phone}/{otp}'
+            response = requests.get(url)
+            email_body = 'Hello,\nUse this OTP for completing the verification  \n' + str(otp)
+            send_mail(
+                'Pension Distribution System- OTP Verification',
+                email_body,
+                None,
+                [email],
+                fail_silently=False,
+            )
+            data = {'response': 'OTP Resent'}
+        else:
+            data = serializer.errors
+        return Response(data)
+
+

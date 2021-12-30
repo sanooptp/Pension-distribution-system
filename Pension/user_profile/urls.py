@@ -10,7 +10,8 @@ urlpatterns = [
     path('request-passwordreset/', views.RequestPasswordResetEmail.as_view(), name='request-passwordreset'),
     path('password-token-verify/<uidb64>/<token>/', views.ResetPassword.as_view(), name='password-token-verify'),
     path('register/', RegisterView.as_view(), name='register'),
-    path('verify-otp/',OtpVerificationView.as_view(),name ="verify-otp")
+    path('verify-otp/',OtpVerificationView.as_view(),name ="verify-otp"),
+    path('resend-otp/',views.ResendOtp.as_view(),name="resend-otp"),
 
 ]
 
