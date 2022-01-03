@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from django.contrib.auth.models import User
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -24,7 +23,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username','email', 'password', 'password2','phone' )
+        fields = ('username', 'email', 'password', 'password2', 'phone')
         extra_kwargs = {
             'password': {'required': True},
         }
@@ -33,8 +32,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         phone = attrs.get('phone')
         if phone is None:
             return Response({
-                'status':400,
-                'message':'key phone_number is required'
+                'status': 400,
+                'message': 'key phone_number is required'
             })
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError(
@@ -46,12 +45,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
-            is_active = False
+            is_active=False
         )
         userprofile = ExtendedUserProfile.objects.create(
             user=user,
             phone=validated_data['phone'],
-            otp = send_otp_to_phone(validated_data['phone'])
+            otp=send_otp_to_phone(validated_data['phone'],validated_data['email'])
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -71,27 +70,28 @@ class OtpVerificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExtendedUserProfile
-        fields = ('phone','otp')
+        fields = ('phone', 'otp')
 
     def validate(self, attrs):
         phone = attrs.get('phone')
         otp = attrs.get('otp')
         if phone is None:
             return Response({
-                'status':400,
-                'message':'key phone number is required'
+                'status': 400,
+                'message': 'key phone number is required'
             })
         if otp is None:
             return Response({
-                'status':400,
-                'meassge':'key otp is required'
+                'status': 400,
+                'meassge': 'key otp is required'
             })
         return attrs
 
     def create(self, validated_data):
         try:
-            userprofile = ExtendedUserProfile.objects.get(phone =validated_data['phone'])
-            if userprofile.is_phone_verified != False:
+            userprofile = ExtendedUserProfile.objects.get(
+                phone=validated_data['phone'])
+            if userprofile.is_phone_verified == False:
                 print(validated_data['phone'])
                 print(userprofile.otp)
                 if userprofile.otp == validated_data['otp']:
@@ -100,7 +100,7 @@ class OtpVerificationSerializer(serializers.ModelSerializer):
                     if user:
                         user.is_active = True
                         user.save()
-                    userprofile.is_phone_verified =True
+                    userprofile.is_phone_verified = True
                     userprofile.save()
 
                     return Response({
@@ -108,30 +108,14 @@ class OtpVerificationSerializer(serializers.ModelSerializer):
                         'message': 'otp Matched'
                     })
             else:
-                raise serializers.ValidationError("human readable error message here")
-
-
+                raise serializers.ValidationError(
+                    "human readable error message here")
 
         except Exception as e:
             return Response({
-                'status':400,
-                'message':'invalid phone'
+                'status': 400,
+                'message': 'invalid phone'
             })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
@@ -144,7 +128,7 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
 class SetNewPasswordSerializer(serializers.Serializer):
     password = serializers.CharField(min_length=6, max_length=68)
-    confirm_password= serializers.CharField(min_length=6, max_length=68)
+    confirm_password = serializers.CharField(min_length=6, max_length=68)
 
     class Meta:
         fields = ['password']
@@ -161,3 +145,18 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except:
             raise serializers.ValidationError(
                 {"password": "Password fields didn't match."})
+
+
+class ResendOtpSerializer(serializers.Serializer):
+    phone = serializers.IntegerField( required=False)
+
+    class Meta:
+        fields = ['phone']
+
+
+
+class ServiceStatusSerializer(serializers.Serializer):
+    service_status = serializers.ChoiceField(choices=['ACTIVE', 'RETIREE'])
+
+    class Meta:
+        fields = ['service_status']
