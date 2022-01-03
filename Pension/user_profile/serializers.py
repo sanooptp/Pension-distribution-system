@@ -152,3 +152,11 @@ class ResendOtpSerializer(serializers.Serializer):
 
     class Meta:
         fields = ['phone']
+
+
+
+class ServiceStatusSerializer(serializers.Serializer):
+    service_status = serializers.ChoiceField(choices=['ACTIVE', 'RETIREE'])
+
+    class Meta:
+        fields = ['service_status']

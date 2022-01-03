@@ -12,6 +12,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('verify-otp/',OtpVerificationView.as_view(),name ="verify-otp"),
     path('resend-otp/',views.ResendOtp.as_view(),name="resend-otp"),
+    path('servie_status/',views.ServiceStatusView.as_view(),name="servie_status"),
 
 ]
 
