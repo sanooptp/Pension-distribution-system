@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render
 from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,7 +7,7 @@ from user_profile.helpers import send_otp_to_phone
 from user_profile.models import ExtendedUserProfile
 from . import serializers
 from rest_framework import status
-from .serializers import RegistrationSerializer,OtpVerificationSerializer, ResendOtpSerializer
+from .serializers import OtpVerificationSerializer, ResendOtpSerializer,UserProfileSerializer
 from rest_framework import status, generics
 from rest_framework.response import Response
 from .serializers import ForgotPasswordSerializer, RegistrationSerializer, SetNewPasswordSerializer
@@ -26,8 +25,6 @@ from django.conf import settings
 
 class RegisterView(GenericAPIView):
     serializer_class = RegistrationSerializer
-    def post(self,request):
-        serializer =RegistrationSerializer(data=request.data)
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -38,6 +35,7 @@ class RegisterView(GenericAPIView):
         else:
             data = serializer.errors
         return Response(data)
+
 
 
 class OtpVerificationView(GenericAPIView):
@@ -61,7 +59,6 @@ class ForgotPasswordView(APIView):
         serializer = self.serializer_class(data=request.data)
         email= serializer.validated_data['email']
 
-
 class RequestPasswordResetEmail(generics.GenericAPIView):
     serializer_class = ForgotPasswordSerializer
 
@@ -80,8 +77,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             relativeLink = reverse('password-token-verify', kwargs={'uidb64': uidb64, 'token': token})
             absurl = 'http://'+current_site + relativeLink
             email_body = 'Hello, \n Use link below to reset your password  \n' + absurl
-            # data = {'email_body': email_body, 'to_email': user.email,
-            #         'email_subject': 'Reset your passsword'}
+
             send_mail(
                 'Pension Distribution System- Reset your password',
                 email_body,
@@ -95,7 +91,8 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
         return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
 
 
-class ResetPassword(APIView):
+
+class ResetPassword(GenericAPIView):
     serializer_class = SetNewPasswordSerializer
 
     def post(self, request, uidb64, token):
@@ -125,22 +122,26 @@ class ResendOtp(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            phone= serializer.data.get('phone')
-            print(phone)
-            profile= ExtendedUserProfile.objects.get(phone=phone)
-            otp = profile.otp
-            email= profile.user.email
-            url = f'https://2factor.in/API/V1/{settings.API_KEY}/SMS/{phone}/{otp}'
-            response = requests.get(url)
-            email_body = 'Hello,\nUse this OTP for completing the verification  \n' + str(otp)
-            send_mail(
-                'Pension Distribution System- OTP Verification',
-                email_body,
-                None,
-                [email],    
-                fail_silently=False,
-            )
-            data = {'response': 'OTP Resent'}
+            phone = serializer.data.get('phone')
+            profile = ExtendedUserProfile.objects.get(phone=phone)
+            if profile.is_phone_verified == False:
+
+                otp = profile.otp
+                email= profile.user.email
+                url = f'https://2factor.in/API/V1/{settings.API_KEY}/SMS/{phone}/{otp}'
+                response = requests.get(url)
+                email_body = 'Hello,\nUse this OTP for completing the verification  \n' + str(otp)
+                send_mail(
+                    'Pension Distribution System- OTP Verification',
+                    email_body,
+                    None,
+                    [email],
+                    fail_silently=False,
+                )
+                data = {'response': 'OTP Resent'}
+            else:
+                data = {'response': 'Resent failed'}
+
         else:
             data = serializer.errors
         return Response(data)
@@ -162,3 +163,40 @@ class ServiceStatusView(APIView):
         else:
             data = serializer.errors
         return Response(data)
+
+class UserProfileView(GenericAPIView):
+    serializer_class = UserProfileSerializer
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            user = ExtendedUserProfile.objects.get(user=request.user)
+            print(user.user.username)
+            user.date_of_birth = serializer.data.get('date_of_birth')
+            user.address = serializer.data.get('address')
+            user.LGA = serializer.data.get('LGA')
+            user.name_of_next_kln = serializer.data.get('name_of_next_kln ')
+            user.next_of_kln_email = serializer.data.get('next_of_kln_email')
+            user.next_of_kln_phone = serializer.data.get('next_of_kln_phone')
+            user.next_of_kln_address = serializer.data.get('next_of_kln_address')
+
+            user.save()
+            data['response'] = "User Profile Updated Successfully "
+        else:
+            data = serializer.errors
+        return Response(data)
+
+    permission_classes = (permissions.IsAuthenticated,)
+    def put(self,request):
+        user = ExtendedUserProfile.objects.get(user=request.user)
+        serializer = UserProfileSerializer(user,data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response (serializer.data)
+        return Response({'message':'error','error':serializer.errors})
+
+
+
+
+
+

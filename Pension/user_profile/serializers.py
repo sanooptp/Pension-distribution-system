@@ -119,11 +119,12 @@ class OtpVerificationSerializer(serializers.ModelSerializer):
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
+
     email = serializers.EmailField()
     redirect_url = serializers.CharField(max_length=500, required=False)
 
     class Meta:
-        fields = ['email']
+        fields = ['email',]
 
 
 class SetNewPasswordSerializer(serializers.Serializer):
@@ -131,7 +132,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(min_length=6, max_length=68)
 
     class Meta:
-        fields = ['password']
+        fields = ['password','confirm_password']
 
     def validate(self, attrs):
         try:
@@ -160,3 +161,17 @@ class ServiceStatusSerializer(serializers.Serializer):
 
     class Meta:
         fields = ['service_status']
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+
+    """ A serializer for our user profile objects"""
+
+    class Meta:
+        model = ExtendedUserProfile
+        fields = ['date_of_birth','address','LGA','name_of_next_kln','next_of_kln_email','next_of_kln_phone','next_of_kln_address']
+
+
+

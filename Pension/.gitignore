@@ -1,5 +1,5 @@
 Django
-.env
+Pension/.env
 *migrations*
 db.sqlite3
 *.log
