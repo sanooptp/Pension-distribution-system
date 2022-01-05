@@ -28,5 +28,5 @@ class ExtendedUserProfile(models.Model):
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.user.username)
 
