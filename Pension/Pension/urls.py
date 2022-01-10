@@ -21,6 +21,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls',namespace='rest_framework')),
     path('', include('user_profile.urls'), name='user_profile'),
     path('', include('Verfication.urls'), name='Verfication'),
-    path('user/', include('user_profile.urls')),
-    path('', include('notifications.urls')),
+ 
+
 ]
