@@ -22,4 +22,5 @@ urlpatterns = [
     path('', include('user_profile.urls'), name='user_profile'),
     path('', include('Verfication.urls'), name='Verfication'),
     path('user/', include('user_profile.urls')),
+    path('', include('notifications.urls')),
 ]

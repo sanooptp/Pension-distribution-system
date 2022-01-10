@@ -40,6 +40,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'user_profile',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,7 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'Verfication'
+    'Verfication',
+    'notifications',
+    
 ]
 
 MIDDLEWARE = [
@@ -80,6 +83,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Pension.wsgi.application'
+ASGI_APPLICATION = "Pension.asgi.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 
 # Database
